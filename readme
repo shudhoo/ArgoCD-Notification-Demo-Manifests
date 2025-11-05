@@ -1,0 +1,61 @@
+This is a Demo to implement ArgoCD Notifications with referencing Docs and Tutorial
+It will contain all the HELM Commands and steps to implement.
+
+
+### HELM Commands for ArgoCD Installation
+helm repo add argo-cd https://argoproj.github.io/argo-helm  ----> Add argocd-repository
+helm repo update  ---> Update the argocd repo
+helm install argocd argo-cd/argo-cd -n argocd --create-namespace --version 7.7.3
+
+#### Output for the above commands
+```
+NAME: argocd
+LAST DEPLOYED: Wed Nov  5 12:19:22 2025
+NAMESPACE: argocd
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+```
+
+
+
+The Logs of are argocd-notifications-controller-b665558cd-dd5fj. This is the pod which handles all the Notification of ArgoCD:
+```
+intelliconnectq@shudhoo:~/Desktop/ArgoCD-Notification$ kubectl logs -f argocd-notifications-controller-b665558cd-dd5fj -n argocd
+2025/11/05 06:50:52 maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined
+time="2025-11-05T06:50:52Z" level=info msg="ArgoCD Notifications Controller is starting" built="2024-11-04T12:09:06Z" commit=347f221adba5599ef4d5f12ee572b2c17d01db4d namespace=argocd version=v2.13.0+347f221
+time="2025-11-05T06:50:52Z" level=info msg="serving metrics on port 9001"
+time="2025-11-05T06:50:52Z" level=info msg="loading configuration 9001"
+time="2025-11-05T06:50:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T06:50:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T06:50:52Z" level=warning msg="Controller is running."
+time="2025-11-05T06:53:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T06:53:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T06:56:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T06:56:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T06:59:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T06:59:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T07:02:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T07:02:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T07:05:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+time="2025-11-05T07:05:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T07:08:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-cm"
+time="2025-11-05T07:08:52Z" level=info msg="invalidated cache for resource in namespace: argocd with the name: argocd-notifications-secret"
+```
