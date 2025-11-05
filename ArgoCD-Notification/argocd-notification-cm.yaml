@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  context: |
+    argocdUrl: https://localhost:8080/
+  service.teams: |
+    recipientUrls:
+      channelName: https://teams.microsoft.com/l/channel/19%3Ab9176854d6bd4163a277e54577f84f03%40thread.tacv2/ArgoCD-Deployment-Alerts?groupId=de3ea671-d7d1-4732-83fa-0fa42a8eee01&tenantId=bd0edc69-11ea-4701-85eb-20002872112d&ngc=true
+
+  template.app-sync-succeeded: |
+    teams:
+      themeColor: "#000080"
+      sections: |
+        [{
+          "facts": [
+            {"name": "Sync Status", "value": "{{.app.status.sync.status}}"},
+            {"name": "Repository", "value": "{{.app.spec.source.repoURL}}"}
+          ]
+        }]
+      potentialAction: |-
+        [{
+          "@type": "OpenUri",
+          "name": "Operation Details",
+          "targets": [{
+            "os": "default",
+            "uri": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true"
+          }]
+        }]
+      title: Application {{.app.metadata.name}} has been successfully synced
+      text: Application {{.app.metadata.name}} synced at {{.app.status.operationState.finishedAt}}.
+      summary: "{{.app.metadata.name}} sync succeeded"
+
+  template.app-sync-failed: |
+    teams:
+      facts: |
+        [{
+          "name": "Sync Status",
+          "value": "{{.app.status.sync.status}}"
+        },
+        {
+          "name": "Failed at",
+          "value": "{{.app.status.operationState.finishedAt}}"
+        },
+        {
+          "name": "Repository",
+          "value": "{{.app.spec.source.repoURL}}"
+        }]
+      potentialAction: |
+        [{
+          "@type": "OpenUri",
+          "name": "Open Operation",
+          "targets": [{
+            "os": "default",
+            "uri": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true"
+          }]
+        }]
+      themeColor: "#FF0000"
+      title: Failed to sync application {{.app.metadata.name}}.
+
+  trigger.on-sync-succeeded: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-sync-succeeded]
+
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Failed']
+      send: [app-sync-failed]
