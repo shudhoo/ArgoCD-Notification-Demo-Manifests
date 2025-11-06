@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: logging-container
-        image: shudhoo/loggingg:v2
+        image: shudhoo/logging:v2
         ports:
         - containerPort: 5001
 
